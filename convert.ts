@@ -3,12 +3,13 @@ import {GoogleNotesFormat, ListItem} from "./data.ts";
 const createListItem = (item: ListItem) => item.isChecked ? '- [x] ' + item.text : '- [ ] ' + item.text;
 const createSimpleNoteFileName = (filename: string) => 'simplenote_generated/' + filename + '.txt';
 const createSimpleNoteFile = (filename: string, content: string) => Deno.writeTextFileSync(createSimpleNoteFileName(filename), content);
+const convertToSafeFileName = (title: string) => title.replaceAll(/ \/ /g, '_').replaceAll(/\//g, '_');
 
 function parseContents(filename: string) {
     const content = Deno.readTextFileSync('takeout_files/' + filename)
     try {
         const note = JSON.parse(content) as GoogleNotesFormat;
-        const newFileName = note.title ? note.title : filename.replace('.json', '');
+        const newFileName = note.title ? convertToSafeFileName(note.title) : filename.replace('.json', '');
         if (note.listContent) {
             const newContent = note.listContent.map(createListItem).join('\n')
             createSimpleNoteFile(newFileName, newContent)
